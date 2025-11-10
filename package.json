@@ -1,0 +1,16 @@
+{
+  "name": "flask-socket-app",
+  "version": "1.0.0",
+  "description": "Flask application with socket functionality",
+  "main": "app.py",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "flask",
+    "socket",
+    "python"
+  ],
+  "author": "",
+  "license": "ISC"
+}
