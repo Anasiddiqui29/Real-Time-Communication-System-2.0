@@ -1,15 +1,18 @@
 {
   "name": "flask-socket-app",
   "version": "1.0.0",
-  "description": "Flask application with socket functionality",
+  "description": "Flask application with WebRTC voice calling",
   "main": "app.py",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "install-deps": "pip install flask-socketio",
+    "start": "python app.py"
   },
   "keywords": [
     "flask",
     "socket",
-    "python"
+    "webrtc",
+    "voice-call",
+    "chat"
   ],
   "author": "",
   "license": "ISC"

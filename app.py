@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Initialize Flask app
@@ -9,11 +10,17 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = "supersecretkey"
 
+# Initialize SocketIO
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 # Initialize database and login manager
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
+
+# Track online users
+online_users = {}
 
 # User model
 class Users(UserMixin, db.Model):
@@ -76,7 +83,14 @@ def login():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", username=current_user.username)
+    return render_template("chat.html", username=current_user.username)
+
+# API to get online users
+@app.route("/api/users")
+@login_required
+def get_users():
+    users = [{"username": username, "status": "online"} for username in online_users.keys()]
+    return jsonify(users)
 
 # Logout route
 @app.route("/logout")
@@ -85,5 +99,73 @@ def logout():
     logout_user()
     return redirect(url_for("home"))
 
+# SocketIO Events
+@socketio.on('connect')
+def handle_connect():
+    if current_user.is_authenticated:
+        online_users[current_user.username] = request.sid
+        emit('user_list', list(online_users.keys()), broadcast=True)
+        print(f"[CONNECTED] {current_user.username}")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    if current_user.is_authenticated and current_user.username in online_users:
+        del online_users[current_user.username]
+        emit('user_list', list(online_users.keys()), broadcast=True)
+        print(f"[DISCONNECTED] {current_user.username}")
+
+@socketio.on('send_message')
+def handle_message(data):
+    recipient = data.get('recipient')
+    message = data.get('message')
+    
+    if recipient in online_users:
+        emit('receive_message', {
+            'sender': current_user.username,
+            'message': message
+        }, room=online_users[recipient])
+
+@socketio.on('call_user')
+def handle_call(data):
+    recipient = data.get('recipient')
+    offer = data.get('offer')
+    
+    if recipient in online_users:
+        emit('incoming_call', {
+            'caller': current_user.username,
+            'offer': offer
+        }, room=online_users[recipient])
+
+@socketio.on('answer_call')
+def handle_answer(data):
+    caller = data.get('caller')
+    answer = data.get('answer')
+    
+    if caller in online_users:
+        emit('call_answered', {
+            'answerer': current_user.username,
+            'answer': answer
+        }, room=online_users[caller])
+
+@socketio.on('ice_candidate')
+def handle_ice_candidate(data):
+    recipient = data.get('recipient')
+    candidate = data.get('candidate')
+    
+    if recipient in online_users:
+        emit('ice_candidate', {
+            'sender': current_user.username,
+            'candidate': candidate
+        }, room=online_users[recipient])
+
+@socketio.on('end_call')
+def handle_end_call(data):
+    recipient = data.get('recipient')
+    
+    if recipient in online_users:
+        emit('call_ended', {
+            'user': current_user.username
+        }, room=online_users[recipient])
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, debug=True)
