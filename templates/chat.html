@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat - {{ username }}</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -369,6 +370,28 @@
         .audio-banner button:hover {
             background: #f0f0f0;
         }
+
+        /* Encryption Status Badge */
+        .encryption-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #00a884;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .encryption-badge::before {
+            content: "🔒";
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -377,6 +400,12 @@
         <span>🔔 Click here to enable call notifications and ringtones</span>
         <button onclick="enableAudioManually()">Enable Audio</button>
     </div>
+    
+    <!-- Encryption Status Badge -->
+    <div class="encryption-badge" title="All messages are encrypted with AES-256">
+        AES-256 Encrypted
+    </div>
+    
     <div class="container">
         <!-- Sidebar -->
         <div class="sidebar">
@@ -439,6 +468,9 @@
         let isSocketConnected = false;
         let audioEnabled = false;
 
+        // AES Encryption Key (shared secret - in production use key exchange)
+        const ENCRYPTION_KEY = "RealTimeCommunicationSystem2024SecureKey";
+
         ringtone.loop = true;
         remoteAudio.autoplay = true;
 
@@ -448,6 +480,30 @@
                 { urls: 'stun:stun1.l.google.com:19302' }
             ]
         };
+
+        // AES Encryption/Decryption Functions
+        function encryptMessage(message) {
+            try {
+                const encrypted = CryptoJS.AES.encrypt(message, ENCRYPTION_KEY).toString();
+                console.log('🔒 Message encrypted');
+                return encrypted;
+            } catch (e) {
+                console.error('Encryption error:', e);
+                return message;
+            }
+        }
+
+        function decryptMessage(encryptedMessage) {
+            try {
+                const decrypted = CryptoJS.AES.decrypt(encryptedMessage, ENCRYPTION_KEY);
+                const plaintext = decrypted.toString(CryptoJS.enc.Utf8);
+                console.log('🔓 Message decrypted');
+                return plaintext;
+            } catch (e) {
+                console.error('Decryption error:', e);
+                return encryptedMessage;
+            }
+        }
 
         // Enable audio on first user interaction
         function enableAudio() {
@@ -502,7 +558,12 @@
 
         socket.on('receive_message', (data) => {
             if (data.sender === selectedUser) {
-                addMessage(data.message, 'received', data.sender);
+                // Decrypt message if encrypted
+                let message = data.message;
+                if (data.encrypted) {
+                    message = decryptMessage(data.message);
+                }
+                addMessage(message, 'received', data.sender);
             }
         });
 
@@ -574,11 +635,16 @@
             const message = input.value.trim();
             
             if (message && selectedUser && isSocketConnected) {
+                // Encrypt message before sending
+                const encryptedMessage = encryptMessage(message);
+                
                 socket.emit('send_message', {
                     recipient: selectedUser,
-                    message: message
+                    message: encryptedMessage,
+                    encrypted: true
                 });
                 
+                // Display original message locally
                 addMessage(message, 'sent');
                 input.value = '';
             } else if (!isSocketConnected) {

@@ -3,6 +3,9 @@ import ssl
 import threading
 import sqlite3
 import pyaudio  # <-- audio support
+import sys
+sys.path.append('..')
+from encryption import AESCipher
 
 # ==========================
 # CONFIGURATION
@@ -15,6 +18,9 @@ clients = {}         # username -> connection
 rooms = {}           # room_name -> {usernames}
 user_rooms = {}      # username -> room_name
 lock = threading.Lock()
+
+# --- AES Encryption for Voice ---
+cipher = AESCipher("RealTimeCommunicationSystem2024SecureKey")
 
 # ==========================
 # SSL CONTEXT
@@ -40,7 +46,7 @@ def authenticate_user(username):
 # ROOM BROADCAST FUNCTION
 # ==========================
 def broadcast_in_room(sender, data):
-    """Send audio data to all users in the same room except the sender"""
+    """Send encrypted audio data to all users in the same room except the sender"""
     room = user_rooms.get(sender)
     if not room:
         return
@@ -49,6 +55,7 @@ def broadcast_in_room(sender, data):
         for user in rooms.get(room, []):
             if user != sender and user in clients:
                 try:
+                    # Audio data is already encrypted by sender, just forward it
                     clients[user].sendall(data)
                 except:
                     pass
@@ -116,7 +123,8 @@ def handle_client(conn, addr):
                     conn.sendall(b"[ERROR] Unknown command.")
 
             else:
-                # Audio data (PyAudio stream)
+                # Audio data (PyAudio stream) - already encrypted by client
+                # Just broadcast the encrypted audio
                 broadcast_in_room(username, data)
 
     except Exception as e:

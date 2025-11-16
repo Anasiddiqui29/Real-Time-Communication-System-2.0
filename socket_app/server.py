@@ -3,6 +3,9 @@ import socket
 import ssl
 import threading
 import os
+import sys
+sys.path.append('..')
+from encryption import AESCipher
 
 # --- User Database ---
 users = {
@@ -11,6 +14,9 @@ users = {
     "ali":"1234",
     "hasan": "1234"
 }
+
+# --- AES Encryption ---
+cipher = AESCipher("RealTimeCommunicationSystem2024SecureKey")
 
 # --- Active Clients ---
 clients = {}  # username -> (conn, addr)
@@ -67,12 +73,16 @@ def handle_client(secure_client, addr):
                 target_conn, _ = clients[target_user]
                 target_conn.send(f"__FILE_START__ {os.path.basename(filename)}".encode())
 
+                # Send file with AES encryption
                 with open(filename, "rb") as f:
                     while chunk := f.read(1024):
-                        target_conn.send(chunk)
+                        # Encrypt each chunk
+                        encrypted_chunk = cipher.encrypt_bytes(chunk)
+                        # Send length prefix + encrypted data
+                        target_conn.send(len(encrypted_chunk).to_bytes(4, 'big') + encrypted_chunk)
 
                 target_conn.send(b"__EOF__")
-                secure_client.send(f"File '{filename}' sent to {target_user}".encode())
+                secure_client.send(f"File '{filename}' sent to {target_user} (AES encrypted) 🔒".encode())
 
             elif data.lower() == "/exit":
                 break
@@ -93,13 +103,20 @@ def handle_client(secure_client, addr):
 
                 target_conn , _ = clients[target_user]
                 try:
-                    target_conn.send(f"[Private from {username}] {message}".encode())
-                    secure_client.send(f"[Private to {target_user}] {message}".encode())
-                except:
-                    secure_client.send("Failed to send message".encode())   
+                    # Encrypt message
+                    encrypted_msg = cipher.encrypt(message)
+                    target_conn.send(f"[Private from {username}] [ENCRYPTED] {encrypted_msg}".encode())
+                    secure_client.send(f"[Private to {target_user}] {message} 🔒".encode())
+                except Exception as e:
+                    secure_client.send(f"Failed to send message: {e}".encode())   
 
             else:
-                broadcast(f"[{username}] {data}", username)             
+                # Encrypt broadcast messages
+                try:
+                    encrypted_msg = cipher.encrypt(data)
+                    broadcast(f"[{username}] [ENCRYPTED] {encrypted_msg}", username)
+                except:
+                    broadcast(f"[{username}] {data}", username)             
 
     except Exception as e:
         print(f"[ERROR] {addr}: {e}")

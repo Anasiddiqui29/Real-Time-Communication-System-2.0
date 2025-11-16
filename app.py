@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.security import generate_password_hash, check_password_hash
+from encryption import encrypt_message, decrypt_message
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -118,17 +119,31 @@ def handle_disconnect():
 def handle_message(data):
     recipient = data.get('recipient')
     message = data.get('message')
+    encrypted = data.get('encrypted', False)
+    
+    # If message is not already encrypted, encrypt it
+    if not encrypted:
+        try:
+            encrypted_message = encrypt_message(message)
+            print(f"[ENCRYPTION] Message encrypted for {recipient}")
+        except Exception as e:
+            print(f"[ENCRYPTION ERROR] {e}")
+            encrypted_message = message
+    else:
+        encrypted_message = message
     
     if recipient in online_users:
         emit('receive_message', {
             'sender': current_user.username,
-            'message': message
+            'message': encrypted_message,
+            'encrypted': True
         }, room=online_users[recipient])
     
     # Send confirmation back to sender
     emit('message_sent', {
         'recipient': recipient,
-        'message': message
+        'message': encrypted_message,
+        'encrypted': True
     })
 
 @socketio.on('call_user')

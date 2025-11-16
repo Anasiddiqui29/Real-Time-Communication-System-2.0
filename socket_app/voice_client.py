@@ -2,6 +2,9 @@ import socket
 import ssl
 import threading
 import pyaudio
+import sys
+sys.path.append('..')
+from encryption import AESCipher
 
 # ==========================
 # CONFIGURATION
@@ -13,6 +16,11 @@ CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
+
+# ==========================
+# AES ENCRYPTION
+# ==========================
+cipher = AESCipher("RealTimeCommunicationSystem2024SecureKey")
 
 # ==========================
 # AUDIO STREAMS
@@ -57,29 +65,52 @@ if "[AUTH ERROR]" in auth_response:
 send_lock = threading.Lock()
 
 def send_audio():
-    """Record microphone audio and send it to the server."""
+    """Record microphone audio, encrypt it, and send to the server."""
     while True:
         try:
             data = stream_in.read(CHUNK, exception_on_overflow=False)
+            # Encrypt audio data
+            encrypted_data = cipher.encrypt_bytes(data)
+            # Send length prefix + encrypted data
+            packet = len(encrypted_data).to_bytes(4, 'big') + encrypted_data
             with send_lock:
-                wrapped.sendall(data)
+                wrapped.sendall(packet)
         except Exception as e:
             print("[Send error]:", e)
             break
 
 
 def receive_audio():
-    """Receive audio and control messages from the server."""
+    """Receive encrypted audio and control messages from the server."""
+    buffer = b""
     while True:
         try:
             data = wrapped.recv(4096)
             if not data:
                 break
+            
             # Control messages
             if data.startswith(b"["):
                 print(data.decode())
             else:
-                stream_out.write(data)
+                # Encrypted audio data with length prefix
+                buffer += data
+                
+                # Process complete packets
+                while len(buffer) >= 4:
+                    packet_len = int.from_bytes(buffer[:4], 'big')
+                    if len(buffer) >= 4 + packet_len:
+                        encrypted_audio = buffer[4:4+packet_len]
+                        buffer = buffer[4+packet_len:]
+                        
+                        try:
+                            # Decrypt audio
+                            decrypted_audio = cipher.decrypt_bytes(encrypted_audio)
+                            stream_out.write(decrypted_audio)
+                        except Exception as e:
+                            print(f"[Decryption error]: {e}")
+                    else:
+                        break
         except Exception as e:
             print("[Receive error]:", e)
             break

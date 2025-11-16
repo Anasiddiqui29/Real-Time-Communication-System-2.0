@@ -3,16 +3,23 @@ import socket
 import ssl
 import threading
 import os
+import sys
+sys.path.append('..')
+from encryption import AESCipher
+
+# --- AES Encryption ---
+cipher = AESCipher("RealTimeCommunicationSystem2024SecureKey")
 
 # --- Receive Messages ---
 def receive_messages(secure_socket):
     file_data = b""
     file_receiving = False
     filename = ""
+    expected_chunk_size = 0
 
     while True:
         try:
-            data = secure_socket.recv(1024)
+            data = secure_socket.recv(4096)
             if not data:
                 print("Disconnected from server.")
                 break
@@ -26,18 +33,23 @@ def receive_messages(secure_socket):
                     filename = "unknown.txt"
                 file_data = b""
                 file_receiving = True
-                print(f"[Receiving file: {filename}]")
+                print(f"[Receiving encrypted file: {filename}] 🔒")
                 continue
 
             # Detect end of file transfer
             if data.startswith(b"__EOF__"):
-                if filename:
-                    save_path = f"received_{os.path.basename(filename)}"
-                    with open(save_path, "wb") as f:
-                        f.write(file_data)
-                    print(f"[File saved successfully as '{save_path}']")
+                if filename and file_data:
+                    try:
+                        # Decrypt file data
+                        decrypted_data = cipher.decrypt_bytes(file_data)
+                        save_path = f"received_{os.path.basename(filename)}"
+                        with open(save_path, "wb") as f:
+                            f.write(decrypted_data)
+                        print(f"[File decrypted and saved as '{save_path}'] 🔓")
+                    except Exception as e:
+                        print(f"[Error decrypting file: {e}]")
                 else:
-                    print("[Error: filename missing, file not saved]")
+                    print("[Error: filename missing or no data]")
                 file_receiving = False
                 filename = ""
                 file_data = b""
@@ -45,9 +57,26 @@ def receive_messages(secure_socket):
 
             # If receiving file data
             if file_receiving:
-                file_data += data
+                # Read length prefix
+                if len(data) >= 4:
+                    chunk_size = int.from_bytes(data[:4], 'big')
+                    encrypted_chunk = data[4:4+chunk_size]
+                    file_data += encrypted_chunk
             else:
-                print(data.decode(errors="ignore"))
+                # Decrypt and display message
+                msg = data.decode(errors="ignore")
+                if "[ENCRYPTED]" in msg:
+                    try:
+                        # Extract encrypted part
+                        parts = msg.split("[ENCRYPTED]", 1)
+                        prefix = parts[0]
+                        encrypted_msg = parts[1].strip()
+                        decrypted_msg = cipher.decrypt(encrypted_msg)
+                        print(f"{prefix}{decrypted_msg} 🔓")
+                    except Exception as e:
+                        print(msg)
+                else:
+                    print(msg)
 
         except Exception as e:
             print("Connection lost:", e)
