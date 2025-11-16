@@ -124,6 +124,12 @@ def handle_message(data):
             'sender': current_user.username,
             'message': message
         }, room=online_users[recipient])
+    
+    # Send confirmation back to sender
+    emit('message_sent', {
+        'recipient': recipient,
+        'message': message
+    })
 
 @socketio.on('call_user')
 def handle_call(data):
@@ -168,4 +174,4 @@ def handle_end_call(data):
         }, room=online_users[recipient])
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)

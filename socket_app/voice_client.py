@@ -6,7 +6,7 @@ import pyaudio
 # ==========================
 # CONFIGURATION
 # ==========================
-SERVER_IP = "localhost"   # Change to your server’s IP
+SERVER_IP = "localhost"   # Change to your server's IP
 SERVER_PORT = 50007
 
 CHUNK = 1024

@@ -394,6 +394,10 @@
         let peerConnection = null;
         let localStream = null;
         let remoteAudio = new Audio();
+        let ringtone = new Audio('/static/ringtone.mp3');
+        let isSocketConnected = false;
+
+        ringtone.loop = true;
 
         const config = {
             iceServers: [
@@ -404,6 +408,7 @@
         // Socket events
         socket.on('connect', () => {
             console.log('Connected to server');
+            isSocketConnected = true;
         });
 
         socket.on('user_list', (users) => {
@@ -414,6 +419,10 @@
             if (data.sender === selectedUser) {
                 addMessage(data.message, 'received', data.sender);
             }
+        });
+
+        socket.on('message_sent', (data) => {
+            console.log('Message sent successfully:', data);
         });
 
         socket.on('incoming_call', async (data) => {
@@ -474,7 +483,7 @@
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             
-            if (message && selectedUser) {
+            if (message && selectedUser && isSocketConnected) {
                 socket.emit('send_message', {
                     recipient: selectedUser,
                     message: message
@@ -482,6 +491,8 @@
                 
                 addMessage(message, 'sent');
                 input.value = '';
+            } else if (!isSocketConnected) {
+                console.log('Socket not connected yet, please wait...');
             }
         }
 
@@ -549,10 +560,14 @@
 
         async function showIncomingCall(caller, offer) {
             selectedUser = caller;
+            ringtone.play().catch(e => console.log('Could not play ringtone:', e));
             showCallModal(caller, `${caller} is calling...`, 'incoming', offer);
         }
 
         async function acceptCall(offer) {
+            ringtone.pause();
+            ringtone.currentTime = 0;
+            
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 peerConnection = new RTCPeerConnection(config);
@@ -598,11 +613,16 @@
         }
 
         function rejectCall() {
+            ringtone.pause();
+            ringtone.currentTime = 0;
             socket.emit('end_call', { recipient: selectedUser });
             endCall();
         }
 
         function endCall() {
+            ringtone.pause();
+            ringtone.currentTime = 0;
+            
             if (peerConnection) {
                 peerConnection.close();
                 peerConnection = null;
