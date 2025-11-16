@@ -121,29 +121,21 @@ def handle_message(data):
     message = data.get('message')
     encrypted = data.get('encrypted', False)
     
-    # If message is not already encrypted, encrypt it
-    if not encrypted:
-        try:
-            encrypted_message = encrypt_message(message)
-            print(f"[ENCRYPTION] Message encrypted for {recipient}")
-        except Exception as e:
-            print(f"[ENCRYPTION ERROR] {e}")
-            encrypted_message = message
-    else:
-        encrypted_message = message
+    # Message is already encrypted by client, just forward it
+    print(f"[MESSAGE] Forwarding encrypted message from {current_user.username} to {recipient}")
     
     if recipient in online_users:
         emit('receive_message', {
             'sender': current_user.username,
-            'message': encrypted_message,
-            'encrypted': True
+            'message': message,
+            'encrypted': encrypted
         }, room=online_users[recipient])
     
     # Send confirmation back to sender
     emit('message_sent', {
         'recipient': recipient,
-        'message': encrypted_message,
-        'encrypted': True
+        'message': message,
+        'encrypted': encrypted
     })
 
 @socketio.on('call_user')

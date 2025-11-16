@@ -553,6 +553,8 @@
         });
 
         socket.on('user_list', (users) => {
+            console.log('Received user list:', users);
+            console.log('Current user:', currentUser);
             updateUserList(users);
         });
 
@@ -595,10 +597,12 @@
         });
 
         function updateUserList(users) {
+            console.log('Updating user list with:', users);
             const userList = document.getElementById('userList');
             userList.innerHTML = '';
             
             users.forEach(username => {
+                console.log('Processing user:', username, 'Current user:', currentUser);
                 if (username !== currentUser) {
                     const userItem = document.createElement('div');
                     userItem.className = 'user-item';
@@ -627,7 +631,17 @@
             document.getElementById('chatUsername').textContent = username;
             document.getElementById('chatAvatar').textContent = username.charAt(0).toUpperCase();
             document.getElementById('messages').innerHTML = '';
-            updateUserList(Array.from(document.querySelectorAll('.user-item')).map(el => el.querySelector('.user-name').textContent));
+            
+            // Re-render user list to update active state
+            const userItems = document.querySelectorAll('.user-item');
+            userItems.forEach(item => {
+                const userName = item.querySelector('.user-name').textContent;
+                if (userName === username) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
         }
 
         function sendMessage() {
