@@ -236,6 +236,87 @@
             background: #008f6f;
         }
 
+        .file-btn {
+            background: #374955;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-btn:hover {
+            background: #485f6f;
+        }
+
+        .file-message {
+            background: #2a3942;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .file-message:hover {
+            background: #374955;
+        }
+
+        .file-icon {
+            font-size: 30px;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            color: #00a884;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .file-size {
+            color: #8696a0;
+            font-size: 12px;
+        }
+
+        .download-btn {
+            background: #00a884;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .download-btn:hover {
+            background: #008f6f;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #374955;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #00a884;
+            transition: width 0.3s;
+        }
+
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -371,40 +452,205 @@
             background: #f0f0f0;
         }
 
-        /* Encryption Status Badge */
-        .encryption-badge {
+        /* Network Monitor Panel */
+        .network-monitor {
             position: fixed;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
-            background: #00a884;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 12px;
+            width: 350px;
+            background: #1f2c34;
+            border: 1px solid #00a884;
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 2000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            font-family: 'Courier New', monospace;
+            max-height: 500px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .network-monitor.minimized {
+            height: 50px;
+            overflow: hidden;
+        }
+
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3942;
+        }
+
+        .monitor-title {
+            color: #00a884;
+            font-weight: bold;
+            font-size: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            z-index: 1000;
         }
 
-        .encryption-badge::before {
-            content: "🔒";
-            font-size: 16px;
+        .monitor-controls {
+            display: flex;
+            gap: 5px;
         }
+
+        .monitor-btn {
+            background: #374955;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .monitor-btn:hover {
+            background: #485f6f;
+        }
+
+        .monitor-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stat-box {
+            background: #0b141a;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #00a884;
+        }
+
+        .stat-label {
+            color: #8696a0;
+            font-size: 10px;
+            margin-bottom: 3px;
+        }
+
+        .stat-value {
+            color: #e9edef;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .packet-log {
+            flex: 1;
+            background: #0b141a;
+            border-radius: 5px;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 250px;
+            font-size: 11px;
+        }
+
+        .packet-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-left: 2px solid #00a884;
+            padding-left: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .packet-type {
+            color: #00a884;
+            font-weight: bold;
+        }
+
+        .packet-encrypted {
+            color: #ffa500;
+        }
+
+        .packet-time {
+            color: #8696a0;
+            font-size: 9px;
+        }
+
+        .packet-details {
+            color: #e9edef;
+            margin-top: 2px;
+        }
+
+        .encryption-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00a884;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
     </style>
 </head>
 <body>
+    <!-- Network Monitor Panel -->
+    <div class="network-monitor" id="networkMonitor">
+        <div class="monitor-header">
+            <div class="monitor-title">
+                <span class="encryption-indicator"></span>
+                Network Monitor
+            </div>
+            <div class="monitor-controls">
+                <button class="monitor-btn" onclick="clearPacketLog()">Clear</button>
+                <button class="monitor-btn" onclick="toggleMonitor()">−</button>
+            </div>
+        </div>
+        <div id="monitorContent">
+            <div class="monitor-stats">
+                <div class="stat-box">
+                    <div class="stat-label">PACKETS SENT</div>
+                    <div class="stat-value" id="packetsSent">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">PACKETS RECV</div>
+                    <div class="stat-value" id="packetsReceived">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">ENCRYPTED</div>
+                    <div class="stat-value" id="encryptedCount">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">DATA SIZE</div>
+                    <div class="stat-value" id="totalData">0 KB</div>
+                </div>
+            </div>
+            <div class="packet-log" id="packetLog">
+                <div style="color: #8696a0; text-align: center; padding: 20px;">
+                    Waiting for network activity...
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Audio Enable Banner -->
-    <div class="audio-banner" id="audioBanner">
+    <div class="audio-banner" id="audioBanner"></div>
         <span>🔔 Click here to enable call notifications and ringtones</span>
         <button onclick="enableAudioManually()">Enable Audio</button>
     </div>
     
-    <!-- Encryption Status Badge -->
-    <div class="encryption-badge" title="All messages are encrypted with AES-256">
-        AES-256 Encrypted
-    </div>
+
     
     <div class="container">
         <!-- Sidebar -->
@@ -425,7 +671,7 @@
                 <h3>Select a user to start chatting</h3>
             </div>
             
-            <div id="chatContent" style="display: none; flex: 1; display: flex; flex-direction: column;">
+            <div id="chatContent" style="display: none;">
                 <div class="chat-header">
                     <div class="chat-user-info">
                         <div class="user-avatar" id="chatAvatar"></div>
@@ -440,6 +686,8 @@
                 </div>
                 <div class="messages" id="messages"></div>
                 <div class="message-input-area">
+                    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+                    <button class="file-btn" onclick="document.getElementById('fileInput').click()" title="Send file">📎</button>
                     <input type="text" class="message-input" id="messageInput" placeholder="Type a message" onkeypress="handleKeyPress(event)">
                     <button class="send-btn" onclick="sendMessage()">Send</button>
                 </div>
@@ -464,6 +712,12 @@
         let peerConnection = null;
         let localStream = null;
         let remoteAudio = new Audio();
+
+        // Network Monitor Variables
+        let packetsSent = 0;
+        let packetsReceived = 0;
+        let encryptedCount = 0;
+        let totalDataSize = 0;
         let ringtone = new Audio('/static/ringtone.mp3');
         let isSocketConnected = false;
         let audioEnabled = false;
@@ -503,6 +757,49 @@
                 console.error('Decryption error:', e);
                 return encryptedMessage;
             }
+        }
+
+        // File Encryption/Decryption
+        function encryptFile(arrayBuffer) {
+            try {
+                const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
+                const encrypted = CryptoJS.AES.encrypt(wordArray, ENCRYPTION_KEY).toString();
+                console.log('🔒 File encrypted');
+                return encrypted;
+            } catch (e) {
+                console.error('File encryption error:', e);
+                return null;
+            }
+        }
+
+        function decryptFile(encryptedData) {
+            try {
+                const decrypted = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
+                const typedArray = convertWordArrayToUint8Array(decrypted);
+                console.log('🔓 File decrypted');
+                return typedArray;
+            } catch (e) {
+                console.error('File decryption error:', e);
+                return null;
+            }
+        }
+
+        function convertWordArrayToUint8Array(wordArray) {
+            const words = wordArray.words;
+            const sigBytes = wordArray.sigBytes;
+            const u8 = new Uint8Array(sigBytes);
+            for (let i = 0; i < sigBytes; i++) {
+                u8[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+            }
+            return u8;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
         // Enable audio on first user interaction
@@ -550,15 +847,24 @@
         socket.on('connect', () => {
             console.log('Connected to server');
             isSocketConnected = true;
+            logPacket('SOCKET', 'RECV', 'Connection established', false);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            isSocketConnected = false;
+            logPacket('SOCKET', 'SEND', 'Connection lost', false);
         });
 
         socket.on('user_list', (users) => {
+            logPacket('USER_LIST', 'RECV', users, false);
             console.log('Received user list:', users);
             console.log('Current user:', currentUser);
             updateUserList(users);
         });
 
         socket.on('receive_message', (data) => {
+            logPacket('MESSAGE', 'RECV', data.message, data.encrypted);
             if (data.sender === selectedUser) {
                 // Decrypt message if encrypted
                 let message = data.message;
@@ -567,6 +873,17 @@
                 }
                 addMessage(message, 'received', data.sender);
             }
+        });
+
+        socket.on('receive_file', (data) => {
+            logPacket('FILE', 'RECV', data.file_data, true);
+            if (data.sender === selectedUser) {
+                addFileMessage(data.file_name, data.file_size, data.file_data, 'received', data.sender);
+            }
+        });
+
+        socket.on('file_sent', (data) => {
+            console.log(`File ${data.file_name} sent to ${data.recipient}`);
         });
 
         socket.on('message_sent', (data) => {
@@ -626,8 +943,14 @@
 
         function selectUser(username) {
             selectedUser = username;
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('chatContent').style.display = 'flex';
+            const emptyState = document.getElementById('emptyState');
+            const chatContent = document.getElementById('chatContent');
+            
+            emptyState.style.display = 'none';
+            chatContent.style.display = 'flex';
+            chatContent.style.flex = '1';
+            chatContent.style.flexDirection = 'column';
+            
             document.getElementById('chatUsername').textContent = username;
             document.getElementById('chatAvatar').textContent = username.charAt(0).toUpperCase();
             document.getElementById('messages').innerHTML = '';
@@ -658,6 +981,8 @@
                     encrypted: true
                 });
                 
+                logPacket('MESSAGE', 'SEND', encryptedMessage, true);
+                
                 // Display original message locally
                 addMessage(message, 'sent');
                 input.value = '';
@@ -685,6 +1010,107 @@
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 sendMessage();
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!selectedUser) {
+                alert('Please select a user first');
+                return;
+            }
+
+            // Check file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size must be less than 10MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                
+                // Encrypt file
+                const encryptedData = encryptFile(arrayBuffer);
+                
+                if (encryptedData) {
+                    // Send encrypted file
+                    socket.emit('send_file', {
+                        recipient: selectedUser,
+                        file_data: encryptedData,
+                        file_name: file.name,
+                        file_size: file.size
+                    });
+
+                    logPacket('FILE', 'SEND', encryptedData, true);
+                    // Show in chat
+                    addFileMessage(file.name, file.size, encryptedData, 'sent');
+                } else {
+                    alert('Failed to encrypt file');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            
+            // Reset input
+            event.target.value = '';
+        }
+
+        function addFileMessage(fileName, fileSize, encryptedData, type, sender = null) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            let senderLabel = '';
+            if (type === 'received' && sender) {
+                senderLabel = `<div class="message-sender">${sender}</div>`;
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${senderLabel}
+                    <div class="file-message" onclick="downloadFile('${fileName}', '${encryptedData}')">
+                        <div class="file-icon">📄</div>
+                        <div class="file-info">
+                            <div class="file-name">${fileName}</div>
+                            <div class="file-size">${formatFileSize(fileSize)}</div>
+                        </div>
+                        <button class="download-btn" onclick="event.stopPropagation(); downloadFile('${fileName}', '${encryptedData}')">
+                            ⬇ Download
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function downloadFile(fileName, encryptedData) {
+            try {
+                // Decrypt file
+                const decryptedData = decryptFile(encryptedData);
+                
+                if (decryptedData) {
+                    // Create blob and download
+                    const blob = new Blob([decryptedData]);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    console.log(`✅ File ${fileName} downloaded and decrypted`);
+                } else {
+                    alert('Failed to decrypt file');
+                }
+            } catch (e) {
+                console.error('Download error:', e);
+                alert('Failed to download file');
             }
         }
 
@@ -770,6 +1196,7 @@
                     offer: offer
                 });
                 
+                logPacket('WEBRTC_OFFER', 'SEND', offer, false);
                 showCallModal(selectedUser, 'Calling...', 'outgoing');
             } catch (error) {
                 console.error('Error initiating call:', error);
@@ -992,6 +1419,101 @@
 
         function logout() {
             window.location.href = '/logout';
+        }
+
+        // Network Monitor Functions
+        function logPacket(type, direction, data, encrypted = false) {
+            const timestamp = new Date().toLocaleTimeString();
+            const packetLog = document.getElementById('packetLog');
+            
+            // Clear initial message
+            if (packetLog.children.length === 1 && packetLog.children[0].textContent.includes('Waiting')) {
+                packetLog.innerHTML = '';
+            }
+            
+            // Calculate data size
+            let dataSize = 0;
+            if (typeof data === 'string') {
+                dataSize = new Blob([data]).size;
+            } else if (data) {
+                dataSize = JSON.stringify(data).length;
+            }
+            
+            totalDataSize += dataSize;
+            
+            // Update counters
+            if (direction === 'SEND') {
+                packetsSent++;
+                document.getElementById('packetsSent').textContent = packetsSent;
+            } else {
+                packetsReceived++;
+                document.getElementById('packetsReceived').textContent = packetsReceived;
+            }
+            
+            if (encrypted) {
+                encryptedCount++;
+                document.getElementById('encryptedCount').textContent = encryptedCount;
+            }
+            
+            document.getElementById('totalData').textContent = (totalDataSize / 1024).toFixed(2) + ' KB';
+            
+            // Create packet entry
+            const entry = document.createElement('div');
+            entry.className = 'packet-entry';
+            
+            const encryptedBadge = encrypted ? '<span class="packet-encrypted">[AES-256]</span>' : '';
+            const arrow = direction === 'SEND' ? '↑' : '↓';
+            
+            entry.innerHTML = `
+                <div>
+                    <span class="packet-type">${arrow} ${type}</span>
+                    ${encryptedBadge}
+                    <span class="packet-time">${timestamp}</span>
+                </div>
+                <div class="packet-details">
+                    ${direction} • ${dataSize} bytes
+                    ${encrypted ? ' • Encrypted' : ''}
+                </div>
+            `;
+            
+            packetLog.insertBefore(entry, packetLog.firstChild);
+            
+            // Keep only last 20 entries
+            while (packetLog.children.length > 20) {
+                packetLog.removeChild(packetLog.lastChild);
+            }
+        }
+
+        function toggleMonitor() {
+            const monitor = document.getElementById('networkMonitor');
+            const content = document.getElementById('monitorContent');
+            const btn = event.target;
+            
+            if (monitor.classList.contains('minimized')) {
+                monitor.classList.remove('minimized');
+                content.style.display = 'block';
+                btn.textContent = '−';
+            } else {
+                monitor.classList.add('minimized');
+                content.style.display = 'none';
+                btn.textContent = '+';
+            }
+        }
+
+        function clearPacketLog() {
+            document.getElementById('packetLog').innerHTML = `
+                <div style="color: #8696a0; text-align: center; padding: 20px;">
+                    Packet log cleared
+                </div>
+            `;
+            packetsSent = 0;
+            packetsReceived = 0;
+            encryptedCount = 0;
+            totalDataSize = 0;
+            document.getElementById('packetsSent').textContent = '0';
+            document.getElementById('packetsReceived').textContent = '0';
+            document.getElementById('encryptedCount').textContent = '0';
+            document.getElementById('totalData').textContent = '0 KB';
         }
     </script>
 </body>

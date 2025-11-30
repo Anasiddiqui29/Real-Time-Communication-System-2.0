@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.security import generate_password_hash, check_password_hash
-from encryption import encrypt_message, decrypt_message
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -11,8 +10,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = "supersecretkey"
 
-# Initialize SocketIO
-socketio = SocketIO(app, cors_allowed_origins="*")
+# Initialize SocketIO with session support
+socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 
 # Initialize database and login manager
 db = SQLAlchemy(app)
@@ -179,6 +178,27 @@ def handle_end_call(data):
         emit('call_ended', {
             'user': current_user.username
         }, room=online_users[recipient])
+
+@socketio.on('send_file')
+def handle_file_transfer(data):
+    recipient = data.get('recipient')
+    file_data = data.get('file_data')
+    file_name = data.get('file_name')
+    file_size = data.get('file_size')
+    
+    if recipient in online_users:
+        emit('receive_file', {
+            'sender': current_user.username,
+            'file_data': file_data,
+            'file_name': file_name,
+            'file_size': file_size
+        }, room=online_users[recipient])
+        
+        # Confirm to sender
+        emit('file_sent', {
+            'recipient': recipient,
+            'file_name': file_name
+        })
 
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
