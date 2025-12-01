@@ -452,14 +452,14 @@ body {
 /* Network Monitor Panel */
 .network-monitor {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    bottom: 20px;
+    left: 20px;
     width: 350px;
     background: #1f2c34;
     border: 1px solid #00a884;
     border-radius: 10px;
     padding: 15px;
-    z-index: 2000;
+    z-index: 1500;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     font-family: 'Courier New', monospace;
     max-height: 500px;

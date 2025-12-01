@@ -294,10 +294,12 @@
         });
 
         socket.on('incoming_call', async (data) => {
+            logPacket('VOICE_CALL', 'RECV', 'Incoming call', false);
             showIncomingCall(data.caller, data.offer);
         });
 
         socket.on('call_answered', async (data) => {
+            logPacket('VOICE_CALL', 'RECV', 'Call answered', false);
             await handleCallAnswer(data.answer);
         });
 
@@ -313,6 +315,7 @@
         });
 
         socket.on('call_ended', () => {
+            logPacket('VOICE_CALL', 'RECV', 'Call ended', false);
             endCall();
         });
 
@@ -599,7 +602,7 @@
                     offer: offer
                 });
 
-                logPacket('WEBRTC_OFFER', 'SEND', offer, false);
+                logPacket('VOICE_CALL', 'SEND', 'Call initiated', false);
                 showCallModal(selectedUser, 'Calling...', 'outgoing');
             } catch (error) {
                 console.error('Error initiating call:', error);
